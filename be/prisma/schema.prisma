@@ -1,0 +1,398 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(STAFF)
+  phone     String?
+  avatar    String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchaseOrders      PurchaseOrder[]
+  
+  inbounds            Inbound[]
+  outboundPickings    Outbound[]
+  packings            Packing[]
+  sortings            Sorting[]
+  shipments           Shipment[]
+  inventoryChecks     InventoryCheck[]
+  approvalsGiven    PurchaseOrderApproval[] @relation("approver")
+}
+
+enum UserRole {
+  ADMIN
+  QUALITY
+  ACCOUNTING
+  WAREHOUSE_DIRECTOR
+  STAFF
+  DRIVER
+}
+
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchaseOrders PurchaseOrder[]
+}
+
+model PurchaseOrder {
+  id              String             @id @default(cuid())
+  orderNumber     String             @unique
+  supplierId      String
+  supplier        Supplier           @relation(fields: [supplierId], references: [id])
+  status          PurchaseOrderStatus @default(DRAFT)
+  expectedDate    DateTime?
+  notes           String?
+  createdById     String
+  createdBy       User               @relation(fields: [createdById], references: [id])
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  approvals       PurchaseOrderApproval[]
+  inbound         Inbound?
+  items           PurchaseOrderItem[]
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  PENDING_ACCOUNTING
+  PENDING_APPROVAL
+  APPROVED
+  SENT_TO_SUPPLIER
+  SUPPLIER_CONFIRMED
+  SUPPLIER_REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+model PurchaseOrderItem {
+  id              String        @id @default(cuid())
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  productId       String
+  quantity        Int
+  unitPrice       Float
+  totalPrice      Float
+  receivedQty     Int           @default(0)
+  createdAt       DateTime     @default(now())
+
+  product         Product       @relation(fields: [productId], references: [id])
+}
+
+model PurchaseOrderApproval {
+  id              String           @id @default(cuid())
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder    @relation(fields: [purchaseOrderId], references: [id])
+  approverId      String
+  approver        User             @relation("approver", fields: [approverId], references: [id])
+  role            ApprovalRole
+  status          ApprovalStatus
+  notes           String?
+  approvedAt      DateTime?
+  createdAt       DateTime         @default(now())
+}
+
+enum ApprovalRole {
+  ACCOUNTING
+  WAREHOUSE_DIRECTOR
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Inbound {
+  id                String        @id @default(cuid())
+  inboundNumber     String        @unique
+  purchaseOrderId   String?       @unique
+  purchaseOrder     PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+  staffId           String
+  staff             User          @relation(fields: [staffId], references: [id])
+  status            InboundStatus @default(INBOUND_CREATED)
+  receivedDate      DateTime?
+  qcPassedDate      DateTime?
+  completedDate     DateTime?
+  notes             String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  items             InboundItem[]
+}
+
+enum InboundStatus {
+  INBOUND_CREATED
+  ITEMS_RECEIVED
+  QUALITY_CHECKING
+  QC_PASSED
+  QC_FAILED
+  BARCODE_CREATED
+  LOCATION_ASSIGNED
+  STAFF_RECEIVED
+  NEW_PRODUCT_CREATED
+  INVENTORY_UPDATED
+  INBOUND_COMPLETED
+  INBOUND_CANCELLED
+}
+
+model InboundItem {
+  id          String   @id @default(cuid())
+  inboundId    String
+  inbound     Inbound  @relation(fields: [inboundId], references: [id])
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  quantity    Int
+  receivedQty Int     @default(0)
+  damageQty   Int      @default(0)
+  barcode     String?  @unique
+  locationId  String?
+  location    WarehouseLocation? @relation(fields: [locationId], references: [id])
+  notes       String?
+  createdAt   DateTime @default(now())
+}
+
+model Outbound {
+  id              String          @id @default(cuid())
+  outboundNumber  String          @unique
+  orderRef        String?         @unique
+  status          OutboundStatus  @default(ORDER_RECEIVED)
+  pickerId        String
+  picker          User            @relation(fields: [pickerId], references: [id])
+  pickedDate      DateTime?
+  notes           String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  items           OutboundItem[]
+  packing         Packing?
+}
+
+enum OutboundStatus {
+  ORDER_RECEIVED
+  INVENTORY_CHECKED
+  INVENTORY_SUFFICIENT
+  INVENTORY_INSUFFICIENT
+  PICKING_ASSIGNED
+  PICKER_ASSIGNED
+  ITEM_SCANNED
+  PICKED_CORRECT
+  PICKED_WRONG
+  PUT_IN_CART
+  SLIP_PRINTED
+  MOVED_TO_PACKING
+}
+
+model OutboundItem {
+  id          String   @id @default(cuid())
+  outboundId  String
+  outbound    Outbound @relation(fields: [outboundId], references: [id])
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  quantity    Int
+  pickedQty   Int      @default(0)
+  locationId  String?
+  location    WarehouseLocation? @relation(fields: [locationId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Packing {
+  id            String       @id @default(cuid())
+  packingNumber String       @unique
+  outboundId    String       @unique
+  outbound      Outbound     @relation(fields: [outboundId], references: [id])
+  packerId      String
+  packer        User         @relation(fields: [packerId], references: [id])
+  status        PackingStatus @default(PENDING)
+  packedDate    DateTime?
+  sealedDate    DateTime?
+  weight        Float?
+  dimension     String?
+  notes         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  sorting       Sorting?
+}
+
+enum PackingStatus {
+  PENDING
+  PACKING
+  PACKED
+  SEALED
+  ON_CONVEYOR
+  CANCELLED
+}
+
+model Sorting {
+  id            String       @id @default(cuid())
+  sortingNumber String       @unique
+  packingId     String       @unique
+  packing       Packing      @relation(fields: [packingId], references: [id])
+  sorterId      String
+  sorter        User         @relation(fields: [sorterId], references: [id])
+  status        SortingStatus @default(PENDING)
+  sortedDate    DateTime?
+  completedDate DateTime?
+  notes         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  shipment      Shipment?
+}
+
+enum SortingStatus {
+  PENDING
+  SORTING
+  SORTED
+  COMPLETED
+}
+
+model Shipment {
+  id              String         @id @default(cuid())
+  shipmentNumber  String         @unique
+  sortingId       String         @unique
+  sorting         Sorting        @relation(fields: [sortingId], references: [id])
+  shipperId       String
+  shipper         User           @relation(fields: [shipperId], references: [id])
+  carrier         String
+  trackingNumber  String?        @unique
+  status          ShipmentStatus @default(CREATED)
+  shippedDate     DateTime?
+  deliveredDate   DateTime?
+  deliveryNotes   String?
+  notes           String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+}
+
+enum ShipmentStatus {
+  CREATED
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+  RETURNED
+}
+
+model InventoryCheck {
+  id              String              @id @default(cuid())
+  checkNumber     String              @unique
+  checkerId       String
+  checker         User                @relation(fields: [checkerId], references: [id])
+  type            InventoryCheckType  @default(ROUTINE)
+  startDate       DateTime?
+  endDate         DateTime?
+  status          InventoryCheckStatus @default(PENDING)
+  notes           String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  items           InventoryCheckItem[]
+}
+
+enum InventoryCheckType {
+  ROUTINE
+  SPOT_CHECK
+  ANNUAL
+}
+
+enum InventoryCheckStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+model InventoryCheckItem {
+  id                String         @id @default(cuid())
+  inventoryCheckId  String
+  inventoryCheck    InventoryCheck @relation(fields: [inventoryCheckId], references: [id])
+  productId         String
+  product           Product        @relation(fields: [productId], references: [id])
+  systemQty         Int
+  actualQty         Int
+  discrepancy       Int
+  notes             String?
+  createdAt         DateTime       @default(now())
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  sku         String   @unique
+  name        String
+  description String?
+  category    String?
+  unit        String   @default("piece")
+  weight      Float?
+  dimensions  String?
+  price       Float    @default(0)
+  minStock    Int      @default(10)
+  image       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  purchaseOrderItems PurchaseOrderItem[]
+  inboundItems       InboundItem[]
+  outboundItems      OutboundItem[]
+  inventory          Inventory?
+  inventoryCheckItems InventoryCheckItem[]
+}
+
+model WarehouseLocation {
+  id       String @id @default(cuid())
+  zone     String
+  row      Int
+  shelf    Int
+  position Int?
+  capacity Int    @default(100)
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+
+  inboundItems  InboundItem[]
+  outboundItems OutboundItem[]
+}
+
+model Inventory {
+  id         String   @id @default(cuid())
+  productId  String   @unique
+  product    Product  @relation(fields: [productId], references: [id])
+  quantity   Int      @default(0)
+  available  Int      @default(0)
+  reserved   Int      @default(0)
+  costPrice  Float    @default(0)
+  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now())
+}
+
+model EventLog {
+  id         String   @id @default(cuid())
+  eventType  String
+  process    String
+  entityType String
+  entityId   String
+  userId     String?
+  payload    Json?
+  status     String   @default("SUCCESS")
+  errorMsg   String?
+  createdAt  DateTime @default(now())
+}
