@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Coverage reports (ephemeral)
+coverage/
+
+# Environment files with secrets
+be/.env
+fe/.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Vite
+fe/dist/
+
+# Claude/Hive session data (ephemeral)
+.claude/
+.hive/
