@@ -180,6 +180,50 @@ npm run build
 # Deploy the dist folder
 ```
 
+## Release, Migration Rehearsal, and Rollback
+
+### Compatibility status
+- No runtime compatibility adapters remain in `be/src/adapters/`.
+- The only remaining legacy-status shim is the one-time backfill script at `be/scripts/backfill-canonical-status.ts`.
+- Sunset date for that backfill shim: **2026-04-25** after production cutover and verification.
+
+### Rehearsal on production-like data
+Run these commands against a staging copy restored from a production snapshot:
+```bash
+cd be
+npx prisma migrate deploy
+npm run db:generate
+tsx scripts/backfill-canonical-status.ts
+npm run test:run
+```
+
+Then validate the frontend against the same environment:
+```bash
+cd fe
+npm run test -- --run
+```
+
+### Release steps
+```bash
+git pull --ff-only
+cd be && npm ci && npm run db:generate && npm run build
+cd fe && npm ci && npm run build
+```
+
+### Rollback steps
+1. Stop writes to the new release.
+2. Restore the last pre-cutover database snapshot.
+3. Redeploy the previous application revision.
+4. Re-run:
+```bash
+cd be && npm run test:run
+cd fe && npm run test -- --run
+```
+
+### Notes
+- This rollout uses snapshot restore for recovery; there is no destructive down-migration path.
+- If the backfill is interrupted, rerun `tsx scripts/backfill-canonical-status.ts` after restoring the snapshot.
+
 ## License
 
 MIT - For educational purposes
