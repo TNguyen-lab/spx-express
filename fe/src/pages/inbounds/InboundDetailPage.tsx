@@ -53,15 +53,15 @@ export default function InboundDetailPage() {
     finally { setIsSubmitting(false); }
   };
 
-  const canReceive = useMemo(() => !!inbound && inbound.status === 'P02_INBOUND_CREATED' && (role === 'STAFF' || role === 'ADMIN'), [inbound, role]);
-  const canStartQC = useMemo(() => !!inbound && inbound.status === 'P02_ITEMS_RECEIVED' && (role === 'QUALITY' || role === 'ADMIN'), [inbound, role]);
-  const canQCResult = useMemo(() => !!inbound && inbound.status === 'P02_QUALITY_CHECKING' && (role === 'QUALITY' || role === 'ADMIN'), [inbound, role]);
-  const canCreateBarcode = useMemo(() => !!inbound && inbound.status === 'P02_QC_PASSED' && (role === 'STAFF' || role === 'ADMIN'), [inbound, role]);
-  const canAssignLocation = useMemo(() => !!inbound && inbound.status === 'P02_BARCODE_CREATED' && (role === 'STAFF' || role === 'ADMIN'), [inbound, role]);
-  const canConfirmReceipt = useMemo(() => !!inbound && inbound.status === 'P02_LOCATION_ASSIGNED' && (role === 'STAFF' || role === 'ADMIN'), [inbound, role]);
-  const canComplete = useMemo(() => !!inbound && (inbound.status === 'P02_STAFF_RECEIVED' || inbound.status === 'P02_INVENTORY_UPDATED') && (role === 'STAFF' || role === 'ADMIN'), [inbound, role]);
-  const canRecheck = useMemo(() => !!inbound && inbound.status === 'P02_QC_FAILED' && (role === 'QUALITY' || role === 'ADMIN'), [inbound, role]);
-  const canCancel = useMemo(() => !!inbound && !['P02_INBOUND_COMPLETED', 'P02_INBOUND_CANCELLED'].includes(inbound.status) && (role === 'QUALITY' || role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN'), [inbound, role]);
+  const canReceive = useMemo(() => !!inbound && inbound.status === 'INBOUND_CREATED' && (role === 'STAFF' || role === 'ADMIN'), [inbound, role]);
+  const canStartQC = useMemo(() => !!inbound && inbound.status === 'ITEMS_RECEIVED' && (role === 'QUALITY' || role === 'ADMIN'), [inbound, role]);
+  const canQCResult = useMemo(() => !!inbound && inbound.status === 'QUALITY_CHECKING' && (role === 'QUALITY' || role === 'ADMIN'), [inbound, role]);
+  const canCreateBarcode = useMemo(() => !!inbound && inbound.status === 'QC_PASSED' && (role === 'STAFF' || role === 'ADMIN'), [inbound, role]);
+  const canAssignLocation = useMemo(() => !!inbound && inbound.status === 'BARCODE_CREATED' && (role === 'STAFF' || role === 'ADMIN'), [inbound, role]);
+  const canConfirmReceipt = useMemo(() => !!inbound && inbound.status === 'LOCATION_ASSIGNED' && (role === 'STAFF' || role === 'ADMIN'), [inbound, role]);
+  const canComplete = useMemo(() => !!inbound && (inbound.status === 'STAFF_RECEIVED' || inbound.status === 'INVENTORY_UPDATED') && (role === 'STAFF' || role === 'ADMIN'), [inbound, role]);
+  const canRecheck = useMemo(() => !!inbound && inbound.status === 'QC_FAILED' && (role === 'QUALITY' || role === 'ADMIN'), [inbound, role]);
+  const canCancel = useMemo(() => !!inbound && !['INBOUND_COMPLETED', 'INBOUND_CANCELLED'].includes(inbound.status) && (role === 'QUALITY' || role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN'), [inbound, role]);
 
   const statusActions: Array<{ key: string; label: string; onClick: () => void; variant?: 'danger' | 'success' | 'secondary' }> = [];
 

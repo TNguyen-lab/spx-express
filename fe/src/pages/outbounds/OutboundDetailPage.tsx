@@ -125,19 +125,19 @@ export default function OutboundDetailPage() {
     }
   };
 
-  const canCheckInventory = useMemo(() => !!outbound && outbound.status === 'P03_ORDER_RECEIVED' && (role === 'STAFF' || role === 'ADMIN'), [outbound, role]);
-  const canConfirmSufficient = useMemo(() => !!outbound && outbound.status === 'P03_INVENTORY_CHECKED' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN'), [outbound, role]);
-  const canMarkInsufficient = useMemo(() => !!outbound && outbound.status === 'P03_INVENTORY_CHECKED' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN'), [outbound, role]);
-  const canAssignPicking = useMemo(() => !!outbound && outbound.status === 'P03_INVENTORY_SUFFICIENT' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN'), [outbound, role]);
-  const canAssignPicker = useMemo(() => !!outbound && outbound.status === 'P03_PICKING_ASSIGNED' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN'), [outbound, role]);
-  const canScanItem = useMemo(() => !!outbound && outbound.status === 'P03_PICKER_ASSIGNED' && (role === 'STAFF' || role === 'ADMIN'), [outbound, role]);
-  const canConfirmPickedCorrect = useMemo(() => !!outbound && outbound.status === 'P03_ITEM_SCANNED' && (role === 'STAFF' || role === 'ADMIN'), [outbound, role]);
-  const canMarkPickedWrong = useMemo(() => !!outbound && outbound.status === 'P03_ITEM_SCANNED' && (role === 'STAFF' || role === 'ADMIN'), [outbound, role]);
-  const canRescan = useMemo(() => !!outbound && outbound.status === 'P03_PICKED_WRONG' && (role === 'STAFF' || role === 'ADMIN'), [outbound, role]);
-  const canPutInCart = useMemo(() => !!outbound && outbound.status === 'P03_PICKED_CORRECT' && (role === 'STAFF' || role === 'ADMIN'), [outbound, role]);
-  const canPrintSlip = useMemo(() => !!outbound && outbound.status === 'P03_PUT_IN_CART' && (role === 'STAFF' || role === 'ADMIN'), [outbound, role]);
-  const canMoveToPacking = useMemo(() => !!outbound && outbound.status === 'P03_SLIP_PRINTED' && (role === 'STAFF' || role === 'ADMIN'), [outbound, role]);
-  const canRecheckInventory = useMemo(() => !!outbound && outbound.status === 'P03_INVENTORY_INSUFFICIENT' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN'), [outbound, role]);
+  const canCheckInventory = useMemo(() => !!outbound && outbound.status === 'ORDER_RECEIVED' && (role === 'STAFF' || role === 'ADMIN'), [outbound, role]);
+  const canConfirmSufficient = useMemo(() => !!outbound && outbound.status === 'INVENTORY_CHECKED' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN'), [outbound, role]);
+  const canMarkInsufficient = useMemo(() => !!outbound && outbound.status === 'INVENTORY_CHECKED' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN'), [outbound, role]);
+  const canAssignPicking = useMemo(() => !!outbound && outbound.status === 'INVENTORY_SUFFICIENT' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN'), [outbound, role]);
+  const canAssignPicker = useMemo(() => !!outbound && outbound.status === 'PICKING_ASSIGNED' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN'), [outbound, role]);
+  const canScanItem = useMemo(() => !!outbound && outbound.status === 'PICKER_ASSIGNED' && (role === 'STAFF' || role === 'ADMIN'), [outbound, role]);
+  const canConfirmPickedCorrect = useMemo(() => !!outbound && outbound.status === 'ITEM_SCANNED' && (role === 'STAFF' || role === 'ADMIN'), [outbound, role]);
+  const canMarkPickedWrong = useMemo(() => !!outbound && outbound.status === 'ITEM_SCANNED' && (role === 'STAFF' || role === 'ADMIN'), [outbound, role]);
+  const canRescan = useMemo(() => !!outbound && outbound.status === 'PICKED_WRONG' && (role === 'STAFF' || role === 'ADMIN'), [outbound, role]);
+  const canPutInCart = useMemo(() => !!outbound && outbound.status === 'PICKED_CORRECT' && (role === 'STAFF' || role === 'ADMIN'), [outbound, role]);
+  const canPrintSlip = useMemo(() => !!outbound && outbound.status === 'PUT_IN_CART' && (role === 'STAFF' || role === 'ADMIN'), [outbound, role]);
+  const canMoveToPacking = useMemo(() => !!outbound && outbound.status === 'SLIP_PRINTED' && (role === 'STAFF' || role === 'ADMIN'), [outbound, role]);
+  const canRecheckInventory = useMemo(() => !!outbound && outbound.status === 'INVENTORY_INSUFFICIENT' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN'), [outbound, role]);
 
   const statusActions: Array<{ key: string; label: string; onClick: () => void; variant?: 'danger' | 'success' | 'secondary' }> = [];
 

@@ -9,6 +9,17 @@ import InboundsPage from './pages/inbounds/InboundsPage';
 import InboundDetailPage from './pages/inbounds/InboundDetailPage';
 import OutboundsPage from './pages/outbounds/OutboundsPage';
 import OutboundDetailPage from './pages/outbounds/OutboundDetailPage';
+import PackingsPage from './pages/packings/PackingsPage';
+import PackingDetailPage from './pages/packings/PackingDetailPage';
+import SortingsPage from './pages/sortings/SortingsPage';
+import SortingDetailPage from './pages/sortings/SortingDetailPage';
+import ShipmentsPage from './pages/shipments/ShipmentsPage';
+import ShipmentDetailPage from './pages/shipments/ShipmentDetailPage';
+import InventoryChecksPage from './pages/inventory-checks/InventoryChecksPage';
+import InventoryCheckDetailPage from './pages/inventory-checks/InventoryCheckDetailPage';
+import TransfersPage from './pages/transfers/TransfersPage';
+import TransferDetailPage from './pages/transfers/TransferDetailPage';
+import ReportsPage from './pages/reports/ReportsPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -112,6 +123,17 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="/packings" element={<ProtectedRoute><Layout><PackingsPage /></Layout></ProtectedRoute>} />
+      <Route path="/packings/:id" element={<ProtectedRoute><Layout><PackingDetailPage /></Layout></ProtectedRoute>} />
+      <Route path="/sortings" element={<ProtectedRoute><Layout><SortingsPage /></Layout></ProtectedRoute>} />
+      <Route path="/sortings/:id" element={<ProtectedRoute><Layout><SortingDetailPage /></Layout></ProtectedRoute>} />
+      <Route path="/shipments" element={<ProtectedRoute><Layout><ShipmentsPage /></Layout></ProtectedRoute>} />
+      <Route path="/shipments/:id" element={<ProtectedRoute><Layout><ShipmentDetailPage /></Layout></ProtectedRoute>} />
+      <Route path="/inventory-checks" element={<ProtectedRoute><Layout><InventoryChecksPage /></Layout></ProtectedRoute>} />
+      <Route path="/inventory-checks/:id" element={<ProtectedRoute><Layout><InventoryCheckDetailPage /></Layout></ProtectedRoute>} />
+      <Route path="/transfers" element={<ProtectedRoute><Layout><TransfersPage /></Layout></ProtectedRoute>} />
+      <Route path="/transfers/:id" element={<ProtectedRoute><Layout><TransferDetailPage /></Layout></ProtectedRoute>} />
+      <Route path="/reports" element={<ProtectedRoute><Layout><ReportsPage /></Layout></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

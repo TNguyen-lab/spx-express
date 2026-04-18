@@ -6,35 +6,35 @@ interface OutboundWorkflowStepsProps {
 }
 
 const mainSteps = [
-  { key: 'P03_ORDER_RECEIVED', label: 'Nhận đơn hàng' },
-  { key: 'P03_INVENTORY_CHECKED', label: 'Kiểm tra tồn kho' },
-  { key: 'P03_PICKING_ASSIGNED', label: 'Điều phối' },
-  { key: 'P03_ITEM_SCANNED', label: 'Quét mã' },
-  { key: 'P03_PICKED_CORRECT', label: 'Lấy đúng' },
-  { key: 'P03_PUT_IN_CART', label: 'Giỏ hàng' },
-  { key: 'P03_SLIP_PRINTED', label: 'In phiếu MB02' },
-  { key: 'P03_MOVED_TO_PACKING', label: 'Đóng gói' },
+  { key: 'ORDER_RECEIVED', label: 'Nhận đơn hàng' },
+  { key: 'INVENTORY_CHECKED', label: 'Kiểm tra tồn kho' },
+  { key: 'PICKING_ASSIGNED', label: 'Điều phối' },
+  { key: 'ITEM_SCANNED', label: 'Quét mã' },
+  { key: 'PICKED_CORRECT', label: 'Lấy đúng' },
+  { key: 'PUT_IN_CART', label: 'Giỏ hàng' },
+  { key: 'SLIP_PRINTED', label: 'In phiếu MB02' },
+  { key: 'MOVED_TO_PACKING', label: 'Đóng gói' },
 ] as const;
 
 const statusIndexMap: Record<OutboundStatus, number> = {
-  P03_ORDER_RECEIVED: 0,
-  P03_INVENTORY_CHECKED: 1,
-  P03_INVENTORY_SUFFICIENT: 1,
-  P03_INVENTORY_INSUFFICIENT: 1,
-  P03_PICKING_ASSIGNED: 2,
-  P03_PICKER_ASSIGNED: 2,
-  P03_ITEM_SCANNED: 3,
-  P03_PICKED_CORRECT: 4,
-  P03_PICKED_WRONG: 3,
-  P03_PUT_IN_CART: 5,
-  P03_SLIP_PRINTED: 6,
-  P03_MOVED_TO_PACKING: 7,
+  ORDER_RECEIVED: 0,
+  INVENTORY_CHECKED: 1,
+  INVENTORY_SUFFICIENT: 1,
+  INVENTORY_INSUFFICIENT: 1,
+  PICKING_ASSIGNED: 2,
+  PICKER_ASSIGNED: 2,
+  ITEM_SCANNED: 3,
+  PICKED_CORRECT: 4,
+  PICKED_WRONG: 3,
+  PUT_IN_CART: 5,
+  SLIP_PRINTED: 6,
+  MOVED_TO_PACKING: 7,
 };
 
 export default function OutboundWorkflowSteps({ status }: OutboundWorkflowStepsProps) {
   const currentIndex = statusIndexMap[status];
-  const isInventoryInsufficient = status === 'P03_INVENTORY_INSUFFICIENT';
-  const isPickedWrong = status === 'P03_PICKED_WRONG';
+  const isInventoryInsufficient = status === 'INVENTORY_INSUFFICIENT';
+  const isPickedWrong = status === 'PICKED_WRONG';
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">

@@ -7,37 +7,37 @@ interface InboundWorkflowStepsProps {
 
 // Main linear flow steps (happy path)
 const mainSteps = [
-  { key: 'P02_INBOUND_CREATED', label: 'Tạo phiếu' },
-  { key: 'P02_ITEMS_RECEIVED', label: 'Hàng đến' },
-  { key: 'P02_QUALITY_CHECKING', label: 'QC kiểm tra' },
-  { key: 'P02_QC_PASSED', label: 'QC đạt' },
-  { key: 'P02_BARCODE_CREATED', label: 'Tạo barcode' },
-  { key: 'P02_LOCATION_ASSIGNED', label: 'Gán vị trí' },
-  { key: 'P02_INVENTORY_UPDATED', label: 'Cập nhật tồn kho' },
-  { key: 'P02_INBOUND_COMPLETED', label: 'Hoàn tất' },
+  { key: 'INBOUND_CREATED', label: 'Tạo phiếu' },
+  { key: 'ITEMS_RECEIVED', label: 'Hàng đến' },
+  { key: 'QUALITY_CHECKING', label: 'QC kiểm tra' },
+  { key: 'QC_PASSED', label: 'QC đạt' },
+  { key: 'BARCODE_CREATED', label: 'Tạo barcode' },
+  { key: 'LOCATION_ASSIGNED', label: 'Gán vị trí' },
+  { key: 'INVENTORY_UPDATED', label: 'Cập nhật tồn kho' },
+  { key: 'INBOUND_COMPLETED', label: 'Hoàn tất' },
 ] as const;
 
 // Map statuses to step indices in the main flow
 // Some statuses are sub-steps or branches, so we map them to the closest main step
 const statusIndexMap: Record<InboundStatus, number> = {
-  P02_INBOUND_CREATED: 0,
-  P02_ITEMS_RECEIVED: 1,
-  P02_QUALITY_CHECKING: 2,
-  P02_QC_PASSED: 3,
-  P02_QC_FAILED: 2, // Branch: maps back to QC step
-  P02_BARCODE_CREATED: 4,
-  P02_LOCATION_ASSIGNED: 5,
-  P02_STAFF_RECEIVED: 5, // Sub-step of location
-  P02_NEW_PRODUCT_CREATED: 6, // Sub-step of inventory
-  P02_INVENTORY_UPDATED: 6,
-  P02_INBOUND_COMPLETED: 7,
-  P02_INBOUND_CANCELLED: -1,
+  INBOUND_CREATED: 0,
+  ITEMS_RECEIVED: 1,
+  QUALITY_CHECKING: 2,
+  QC_PASSED: 3,
+  QC_FAILED: 2, // Branch: maps back to QC step
+  BARCODE_CREATED: 4,
+  LOCATION_ASSIGNED: 5,
+  STAFF_RECEIVED: 5, // Sub-step of location
+  NEW_PRODUCT_CREATED: 6, // Sub-step of inventory
+  INVENTORY_UPDATED: 6,
+  INBOUND_COMPLETED: 7,
+  INBOUND_CANCELLED: -1,
 };
 
 export default function InboundWorkflowSteps({ status }: InboundWorkflowStepsProps) {
   const currentIndex = statusIndexMap[status];
-  const isFailed = status === 'P02_QC_FAILED';
-  const isCancelled = status === 'P02_INBOUND_CANCELLED';
+  const isFailed = status === 'QC_FAILED';
+  const isCancelled = status === 'INBOUND_CANCELLED';
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">

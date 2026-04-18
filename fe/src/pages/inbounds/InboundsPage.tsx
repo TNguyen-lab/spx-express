@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Plus, Search, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
-import { p02Api } from '../../services/api';
-import { Inbound, InboundStatus } from '../../types';
+import { p02Api, type CreateInboundRequest } from '../../services/api';
+import { Inbound } from '../../types';
+import { InboundStatus } from '../../types/canonical';
 import { useAuth } from '../../context/AuthContext';
 import InboundStatusBadge from '../../components/InboundStatusBadge';
 import CreateInboundModal from '../../components/CreateInboundModal';
@@ -11,18 +12,18 @@ const PAGE_SIZE = 10;
 
 const statusOptions: Array<{ value: 'ALL' | InboundStatus; label: string }> = [
   { value: 'ALL', label: 'Tất cả trạng thái' },
-  { value: 'P02_INBOUND_CREATED', label: 'Tạo phiếu nhập kho' },
-  { value: 'P02_ITEMS_RECEIVED', label: 'Hàng đến' },
-  { value: 'P02_QUALITY_CHECKING', label: 'QC đang kiểm tra' },
-  { value: 'P02_QC_PASSED', label: 'QC đạt' },
-  { value: 'P02_QC_FAILED', label: 'QC không đạt' },
-  { value: 'P02_BARCODE_CREATED', label: 'Tạo barcode' },
-  { value: 'P02_LOCATION_ASSIGNED', label: 'Gán vị trí lưu kho' },
-  { value: 'P02_STAFF_RECEIVED', label: 'Staff xác nhận' },
-  { value: 'P02_NEW_PRODUCT_CREATED', label: 'Tạo sản phẩm mới' },
-  { value: 'P02_INVENTORY_UPDATED', label: 'Cập nhật tồn kho' },
-  { value: 'P02_INBOUND_COMPLETED', label: 'Hoàn tất nhập kho' },
-  { value: 'P02_INBOUND_CANCELLED', label: 'Đã hủy' },
+  { value: 'INBOUND_CREATED', label: 'Tạo phiếu nhập kho' },
+  { value: 'ITEMS_RECEIVED', label: 'Hàng đến' },
+  { value: 'QUALITY_CHECKING', label: 'QC đang kiểm tra' },
+  { value: 'QC_PASSED', label: 'QC đạt' },
+  { value: 'QC_FAILED', label: 'QC không đạt' },
+  { value: 'BARCODE_CREATED', label: 'Tạo barcode' },
+  { value: 'LOCATION_ASSIGNED', label: 'Gán vị trí lưu kho' },
+  { value: 'STAFF_RECEIVED', label: 'Staff xác nhận' },
+  { value: 'NEW_PRODUCT_CREATED', label: 'Tạo sản phẩm mới' },
+  { value: 'INVENTORY_UPDATED', label: 'Cập nhật tồn kho' },
+  { value: 'INBOUND_COMPLETED', label: 'Hoàn tất nhập kho' },
+  { value: 'INBOUND_CANCELLED', label: 'Đã hủy' },
 ];
 
 function formatDate(dateString?: string) {
@@ -32,13 +33,13 @@ function formatDate(dateString?: string) {
 
 function getPrimaryActionLabel(status: InboundStatus, role?: string) {
   if (!role) return null;
-  if (status === 'P02_INBOUND_CREATED' && (role === 'STAFF' || role === 'ADMIN')) return 'Nhận hàng';
-  if (status === 'P02_ITEMS_RECEIVED' && (role === 'QUALITY' || role === 'ADMIN')) return 'Kiểm tra QC';
-  if (status === 'P02_QUALITY_CHECKING' && (role === 'QUALITY' || role === 'ADMIN')) return 'Kết quả QC';
-  if (status === 'P02_QC_PASSED' && (role === 'STAFF' || role === 'ADMIN')) return 'Tạo barcode';
-  if (status === 'P02_BARCODE_CREATED' && (role === 'STAFF' || role === 'ADMIN')) return 'Gán vị trí';
-  if (status === 'P02_LOCATION_ASSIGNED' && (role === 'STAFF' || role === 'ADMIN')) return 'Xác nhận';
-  if (status === 'P02_QC_FAILED' && (role === 'QUALITY' || role === 'ADMIN')) return 'Kiểm tra lại';
+  if (status === 'INBOUND_CREATED' && (role === 'STAFF' || role === 'ADMIN')) return 'Nhận hàng';
+  if (status === 'ITEMS_RECEIVED' && (role === 'QUALITY' || role === 'ADMIN')) return 'Kiểm tra QC';
+  if (status === 'QUALITY_CHECKING' && (role === 'QUALITY' || role === 'ADMIN')) return 'Kết quả QC';
+  if (status === 'QC_PASSED' && (role === 'STAFF' || role === 'ADMIN')) return 'Tạo barcode';
+  if (status === 'BARCODE_CREATED' && (role === 'STAFF' || role === 'ADMIN')) return 'Gán vị trí';
+  if (status === 'LOCATION_ASSIGNED' && (role === 'STAFF' || role === 'ADMIN')) return 'Xác nhận';
+  if (status === 'QC_FAILED' && (role === 'QUALITY' || role === 'ADMIN')) return 'Kiểm tra lại';
   return null;
 }
 
@@ -106,7 +107,7 @@ export default function InboundsPage() {
     try {
       setActionError('');
       setIsCreating(true);
-      await p02Api.createInbound(payload as unknown as Record<string, unknown>);
+      await p02Api.createInbound(payload as CreateInboundRequest);
       setIsCreateModalOpen(false);
       await fetchInbounds();
     } catch (err) {

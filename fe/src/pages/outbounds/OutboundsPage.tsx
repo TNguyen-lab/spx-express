@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Plus, Search, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
-import { p03Api } from '../../services/api';
-import { Outbound, OutboundStatus } from '../../types';
+import { p03Api, type CreateOutboundRequest } from '../../services/api';
+import { Outbound } from '../../types';
+import { OutboundStatus } from '../../types/canonical';
 import { useAuth } from '../../context/AuthContext';
 import OutboundStatusBadge from '../../components/OutboundStatusBadge';
 import CreateOutboundModal from '../../components/CreateOutboundModal';
@@ -11,18 +12,18 @@ const PAGE_SIZE = 10;
 
 const statusOptions: Array<{ value: 'ALL' | OutboundStatus; label: string }> = [
   { value: 'ALL', label: 'Tất cả trạng thái' },
-  { value: 'P03_ORDER_RECEIVED', label: 'Nhận đơn từ Shopee' },
-  { value: 'P03_INVENTORY_CHECKED', label: 'Kiểm tra tồn kho' },
-  { value: 'P03_INVENTORY_SUFFICIENT', label: 'Đủ hàng' },
-  { value: 'P03_INVENTORY_INSUFFICIENT', label: 'Không đủ hàng' },
-  { value: 'P03_PICKING_ASSIGNED', label: 'Giao điều phối' },
-  { value: 'P03_PICKER_ASSIGNED', label: 'Giao nhân viên lấy hàng' },
-  { value: 'P03_ITEM_SCANNED', label: 'Quét mã sản phẩm' },
-  { value: 'P03_PICKED_CORRECT', label: 'Lấy đúng sản phẩm' },
-  { value: 'P03_PICKED_WRONG', label: 'Lấy sai (quét lại)' },
-  { value: 'P03_PUT_IN_CART', label: 'Cho vào giỏ hàng' },
-  { value: 'P03_SLIP_PRINTED', label: 'In phiếu xuất kho (MB02)' },
-  { value: 'P03_MOVED_TO_PACKING', label: 'Chuyển sang đóng gói' },
+  { value: 'ORDER_RECEIVED', label: 'Nhận đơn từ Shopee' },
+  { value: 'INVENTORY_CHECKED', label: 'Kiểm tra tồn kho' },
+  { value: 'INVENTORY_SUFFICIENT', label: 'Đủ hàng' },
+  { value: 'INVENTORY_INSUFFICIENT', label: 'Không đủ hàng' },
+  { value: 'PICKING_ASSIGNED', label: 'Giao điều phối' },
+  { value: 'PICKER_ASSIGNED', label: 'Giao nhân viên lấy hàng' },
+  { value: 'ITEM_SCANNED', label: 'Quét mã sản phẩm' },
+  { value: 'PICKED_CORRECT', label: 'Lấy đúng sản phẩm' },
+  { value: 'PICKED_WRONG', label: 'Lấy sai (quét lại)' },
+  { value: 'PUT_IN_CART', label: 'Cho vào giỏ hàng' },
+  { value: 'SLIP_PRINTED', label: 'In phiếu xuất kho (MB02)' },
+  { value: 'MOVED_TO_PACKING', label: 'Chuyển sang đóng gói' },
 ];
 
 function formatDate(dateString?: string) {
@@ -32,16 +33,16 @@ function formatDate(dateString?: string) {
 
 function getPrimaryActionLabel(status: OutboundStatus, role?: string) {
   if (!role) return null;
-  if (status === 'P03_ORDER_RECEIVED' && (role === 'STAFF' || role === 'ADMIN')) return 'Kiểm tra tồn kho';
-  if (status === 'P03_INVENTORY_CHECKED' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN')) return 'Xác nhận đủ hàng';
-  if (status === 'P03_INVENTORY_SUFFICIENT' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN')) return 'Điều phối lấy hàng';
-  if (status === 'P03_PICKING_ASSIGNED' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN')) return 'Giao nhân viên';
-  if (status === 'P03_PICKER_ASSIGNED' && (role === 'STAFF' || role === 'ADMIN')) return 'Quét mã';
-  if (status === 'P03_ITEM_SCANNED' && (role === 'STAFF' || role === 'ADMIN')) return 'Lấy đúng';
-  if (status === 'P03_PUT_IN_CART' && (role === 'STAFF' || role === 'ADMIN')) return 'In phiếu';
-  if (status === 'P03_SLIP_PRINTED' && (role === 'STAFF' || role === 'ADMIN')) return 'Chuyển đóng gói';
-  if (status === 'P03_INVENTORY_INSUFFICIENT' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN')) return 'Kiểm tra lại';
-  if (status === 'P03_PICKED_WRONG' && (role === 'STAFF' || role === 'ADMIN')) return 'Quét lại';
+  if (status === 'ORDER_RECEIVED' && (role === 'STAFF' || role === 'ADMIN')) return 'Kiểm tra tồn kho';
+  if (status === 'INVENTORY_CHECKED' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN')) return 'Xác nhận đủ hàng';
+  if (status === 'INVENTORY_SUFFICIENT' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN')) return 'Điều phối lấy hàng';
+  if (status === 'PICKING_ASSIGNED' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN')) return 'Giao nhân viên';
+  if (status === 'PICKER_ASSIGNED' && (role === 'STAFF' || role === 'ADMIN')) return 'Quét mã';
+  if (status === 'ITEM_SCANNED' && (role === 'STAFF' || role === 'ADMIN')) return 'Lấy đúng';
+  if (status === 'PUT_IN_CART' && (role === 'STAFF' || role === 'ADMIN')) return 'In phiếu';
+  if (status === 'SLIP_PRINTED' && (role === 'STAFF' || role === 'ADMIN')) return 'Chuyển đóng gói';
+  if (status === 'INVENTORY_INSUFFICIENT' && (role === 'WAREHOUSE_DIRECTOR' || role === 'ADMIN')) return 'Kiểm tra lại';
+  if (status === 'PICKED_WRONG' && (role === 'STAFF' || role === 'ADMIN')) return 'Quét lại';
   return null;
 }
 
@@ -114,7 +115,7 @@ export default function OutboundsPage() {
     try {
       setActionError('');
       setIsCreating(true);
-      await p03Api.createOutbound(payload as unknown as Record<string, unknown>);
+      await p03Api.createOutbound(payload as CreateOutboundRequest);
       setIsCreateModalOpen(false);
       await fetchOutbounds();
     } catch (err) {

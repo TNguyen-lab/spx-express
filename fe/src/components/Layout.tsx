@@ -9,7 +9,9 @@ import {
   Truck,
   ClipboardList,
   FileText,
-  LogOut
+  LogOut,
+  ArrowLeftRight,
+  BarChart3,
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -25,6 +27,8 @@ const menuItems = [
   { path: '/sortings', label: 'Phân loại', icon: FileText },
   { path: '/shipments', label: 'Vận chuyển', icon: Truck },
   { path: '/inventory-checks', label: 'Kiểm kê', icon: ClipboardList },
+  { path: '/transfers', label: 'Chuyển kho', icon: ArrowLeftRight },
+  { path: '/reports', label: 'Báo cáo', icon: BarChart3 },
 ];
 
 export default function Layout({ children }: LayoutProps) {

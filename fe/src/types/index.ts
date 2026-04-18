@@ -1,4 +1,27 @@
-// User types
+import {
+  PurchaseOrderStatus,
+  InboundStatus,
+  OutboundStatus,
+  PackingStatus,
+  SortingStatus,
+  ShippingStatus,
+  InventoryCheckStatus,
+} from './canonical';
+
+export type {
+  PurchaseOrderStatus,
+  InboundStatus,
+  OutboundStatus,
+  PackingStatus,
+  SortingStatus,
+  ShippingStatus as ShipmentStatus,
+  InventoryCheckStatus,
+};
+
+export { WorkflowStatus, getTerminalStatuses } from './canonical';
+
+export type { WorkflowStatusCategory } from './canonical';
+
 export interface User {
   id: string;
   email: string;
@@ -12,7 +35,6 @@ export interface AuthResponse {
   user: User;
 }
 
-// Product types
 export interface Product {
   id: string;
   sku: string;
@@ -46,7 +68,14 @@ export interface WarehouseLocation {
   capacity: number;
 }
 
-// P01: Purchase Order types
+export interface Supplier {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+}
+
 export interface PurchaseOrder {
   id: string;
   orderNumber: string;
@@ -61,17 +90,6 @@ export interface PurchaseOrder {
   items: PurchaseOrderItem[];
   approvals?: PurchaseOrderApproval[];
 }
-
-export type PurchaseOrderStatus = 
-  | 'DRAFT' 
-  | 'PENDING_ACCOUNTING' 
-  | 'PENDING_APPROVAL' 
-  | 'APPROVED'
-  | 'SENT_TO_SUPPLIER' 
-  | 'SUPPLIER_CONFIRMED' 
-  | 'SUPPLIER_REJECTED' 
-  | 'CANCELLED' 
-  | 'COMPLETED';
 
 export interface PurchaseOrderItem {
   id: string;
@@ -93,16 +111,6 @@ export interface PurchaseOrderApproval {
   approvedAt?: string;
 }
 
-// Supplier
-export interface Supplier {
-  id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-}
-
-// P02: Inbound types
 export interface Inbound {
   id: string;
   inboundNumber: string;
@@ -120,20 +128,6 @@ export interface Inbound {
   items: InboundItem[];
 }
 
-export type InboundStatus =
-  | 'P02_INBOUND_CREATED'
-  | 'P02_ITEMS_RECEIVED'
-  | 'P02_QUALITY_CHECKING'
-  | 'P02_QC_PASSED'
-  | 'P02_QC_FAILED'
-  | 'P02_BARCODE_CREATED'
-  | 'P02_LOCATION_ASSIGNED'
-  | 'P02_STAFF_RECEIVED'
-  | 'P02_NEW_PRODUCT_CREATED'
-  | 'P02_INVENTORY_UPDATED'
-  | 'P02_INBOUND_COMPLETED'
-  | 'P02_INBOUND_CANCELLED';
-
 export interface InboundItem {
   id: string;
   productId: string;
@@ -147,7 +141,6 @@ export interface InboundItem {
   notes?: string;
 }
 
-// P03: Outbound types
 export interface Outbound {
   id: string;
   outboundNumber: string;
@@ -163,20 +156,6 @@ export interface Outbound {
   packing?: Packing;
 }
 
-export type OutboundStatus =
-  | 'P03_ORDER_RECEIVED'
-  | 'P03_INVENTORY_CHECKED'
-  | 'P03_INVENTORY_SUFFICIENT'
-  | 'P03_INVENTORY_INSUFFICIENT'
-  | 'P03_PICKING_ASSIGNED'
-  | 'P03_PICKER_ASSIGNED'
-  | 'P03_ITEM_SCANNED'
-  | 'P03_PICKED_CORRECT'
-  | 'P03_PICKED_WRONG'
-  | 'P03_PUT_IN_CART'
-  | 'P03_SLIP_PRINTED'
-  | 'P03_MOVED_TO_PACKING';
-
 export interface OutboundItem {
   id: string;
   productId: string;
@@ -187,7 +166,6 @@ export interface OutboundItem {
   location?: WarehouseLocation;
 }
 
-// P04: Packing types
 export interface Packing {
   id: string;
   packingNumber: string;
@@ -200,17 +178,15 @@ export interface Packing {
   sealedDate?: string;
   weight?: number;
   dimension?: string;
+  notes?: string;
+  cartonId?: string;
+  palletId?: string;
+  itemsPacked?: number;
+  sorting?: { id: string; sortingNumber: string; status?: SortingStatus };
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export type PackingStatus = 
-  | 'PENDING' 
-  | 'PACKING' 
-  | 'PACKED' 
-  | 'SEALED' 
-  | 'ON_CONVEYOR' 
-  | 'CANCELLED';
-
-// P05: Sorting types
 export interface Sorting {
   id: string;
   sortingNumber: string;
@@ -221,11 +197,11 @@ export interface Sorting {
   status: SortingStatus;
   sortedDate?: string;
   completedDate?: string;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export type SortingStatus = 'PENDING' | 'SORTING' | 'SORTED' | 'COMPLETED';
-
-// P06: Shipping types
 export interface Shipment {
   id: string;
   shipmentNumber: string;
@@ -235,21 +211,15 @@ export interface Shipment {
   shipper: { id: string; name: string };
   carrier: string;
   trackingNumber?: string;
-  status: ShipmentStatus;
+  status: ShippingStatus;
   shippedDate?: string;
   deliveredDate?: string;
+  deliveryNotes?: string | null;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export type ShipmentStatus = 
-  | 'CREATED' 
-  | 'PICKED_UP' 
-  | 'IN_TRANSIT' 
-  | 'OUT_FOR_DELIVERY' 
-  | 'DELIVERED' 
-  | 'FAILED' 
-  | 'RETURNED';
-
-// P07: Inventory Check types
 export interface InventoryCheck {
   id: string;
   checkNumber: string;
@@ -258,9 +228,14 @@ export interface InventoryCheck {
   type: 'ROUTINE' | 'SPOT_CHECK' | 'ANNUAL';
   startDate?: string;
   endDate?: string;
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+  status: InventoryCheckStatus;
   notes?: string;
+  approver?: { id: string; name: string };
+  approvedAt?: string;
+  scope?: string;
   items: InventoryCheckItem[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface InventoryCheckItem {
@@ -270,9 +245,120 @@ export interface InventoryCheckItem {
   systemQty: number;
   actualQty: number;
   discrepancy: number;
+  notes?: string;
 }
 
-// Event Log
+export type TransferStatus =
+  | 'PENDING'
+  | 'APPROVED'
+  | 'DISPATCHED'
+  | 'IN_TRANSIT'
+  | 'RECEIVED'
+  | 'COMPLETED'
+  | 'CANCELLED'
+  | 'EXCEPTION';
+
+export interface TransferLocation {
+  id: string;
+  zone?: string;
+  row?: number;
+  shelf?: number;
+  name?: string;
+}
+
+export interface TransferItem {
+  id: string;
+  productId: string;
+  product: Product;
+  quantity: number;
+  receivedQty: number;
+  discrepancyNote?: string | null;
+  resolved?: boolean;
+}
+
+export interface TransferReconciliation {
+  id: string;
+  productId: string;
+  product?: Product;
+  expectedQty: number;
+  actualQty: number;
+  discrepancyQty: number;
+  resolution?: 'RESOLVED_SOURCE' | 'RESOLVED_DESTINATION' | 'WRITTEN_OFF';
+  resolvedAt?: string | null;
+  resolvedById?: string | null;
+  notes?: string | null;
+}
+
+export interface Transfer {
+  id: string;
+  transferNumber: string;
+  fromLocationId: string;
+  toLocationId: string;
+  fromLocation?: TransferLocation;
+  toLocation?: TransferLocation;
+  status: TransferStatus;
+  requestedById?: string;
+  requestedBy?: { id: string; name: string };
+  approvedById?: string | null;
+  approvedBy?: { id: string; name: string };
+  notes?: string | null;
+  dispatchedAt?: string | null;
+  receivedAt?: string | null;
+  items: TransferItem[];
+  reconciliations?: TransferReconciliation[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface MonthlyReportLine {
+  productId: string;
+  sku: string;
+  name: string;
+  category: string | null;
+  openingStock: number;
+  inbound: number;
+  outbound: number;
+  transferIn: number;
+  transferOut: number;
+  adjustment: number;
+  endingStock: number;
+}
+
+export interface MonthlyReportPayload {
+  reportType: 'MONTHLY_INVENTORY';
+  period: { month: string; start: string; end: string; closedAt: string };
+  closeRule: string;
+  filters: {
+    month: string;
+    warehouseLocationId?: string;
+    productId?: string;
+    category?: string;
+  };
+  summary: {
+    openingStock: number;
+    inbound: number;
+    outbound: number;
+    transferIn: number;
+    transferOut: number;
+    adjustment: number;
+    endingStock: number;
+  };
+  reconciliation: {
+    expectedEndingStock: number;
+    ledgerEndingStock: number;
+    difference: number;
+    balanced: boolean;
+  };
+  movements: { count: number; sourceHash: string };
+  lines: MonthlyReportLine[];
+}
+
+export interface MonthlyReportMeta {
+  reportKey: string;
+  sourceHash: string;
+  sourceMovementCount: number;
+}
+
 export interface EventLog {
   id: string;
   eventType: string;
