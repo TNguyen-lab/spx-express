@@ -5,36 +5,36 @@ import type { OutboundStatus } from '../../types';
 
 describe('OutboundStatusBadge', () => {
   const statuses: OutboundStatus[] = [
-    'P03_ORDER_RECEIVED',
-    'P03_INVENTORY_CHECKED',
-    'P03_INVENTORY_SUFFICIENT',
-    'P03_INVENTORY_INSUFFICIENT',
-    'P03_PICKING_ASSIGNED',
-    'P03_PICKER_ASSIGNED',
-    'P03_ITEM_SCANNED',
-    'P03_PICKED_CORRECT',
-    'P03_PICKED_WRONG',
-    'P03_PUT_IN_CART',
-    'P03_SLIP_PRINTED',
-    'P03_MOVED_TO_PACKING',
+    'ORDER_RECEIVED',
+    'INVENTORY_CHECKED',
+    'INVENTORY_SUFFICIENT',
+    'INVENTORY_INSUFFICIENT',
+    'PICKING_ASSIGNED',
+    'PICKER_ASSIGNED',
+    'ITEM_SCANNED',
+    'PICKED_CORRECT',
+    'PICKED_WRONG',
+    'PUT_IN_CART',
+    'SLIP_PRINTED',
+    'MOVED_TO_PACKING',
   ];
 
   const expectedLabels: Record<OutboundStatus, string> = {
-    P03_ORDER_RECEIVED: 'Nhận đơn từ Shopee',
-    P03_INVENTORY_CHECKED: 'Kiểm tra tồn kho',
-    P03_INVENTORY_SUFFICIENT: 'Đủ hàng',
-    P03_INVENTORY_INSUFFICIENT: 'Không đủ hàng',
-    P03_PICKING_ASSIGNED: 'Giao điều phối',
-    P03_PICKER_ASSIGNED: 'Giao nhân viên lấy hàng',
-    P03_ITEM_SCANNED: 'Quét mã sản phẩm',
-    P03_PICKED_CORRECT: 'Lấy đúng sản phẩm',
-    P03_PICKED_WRONG: 'Lấy sai (quét lại)',
-    P03_PUT_IN_CART: 'Cho vào giỏ hàng',
-    P03_SLIP_PRINTED: 'In phiếu xuất kho (MB02)',
-    P03_MOVED_TO_PACKING: 'Chuyển sang đóng gói',
+    ORDER_RECEIVED: 'Nhận đơn từ Shopee',
+    INVENTORY_CHECKED: 'Kiểm tra tồn kho',
+    INVENTORY_SUFFICIENT: 'Đủ hàng',
+    INVENTORY_INSUFFICIENT: 'Không đủ hàng',
+    PICKING_ASSIGNED: 'Giao điều phối',
+    PICKER_ASSIGNED: 'Giao nhân viên lấy hàng',
+    ITEM_SCANNED: 'Quét mã sản phẩm',
+    PICKED_CORRECT: 'Lấy đúng sản phẩm',
+    PICKED_WRONG: 'Lấy sai (quét lại)',
+    PUT_IN_CART: 'Cho vào giỏ hàng',
+    SLIP_PRINTED: 'In phiếu xuất kho (MB02)',
+    MOVED_TO_PACKING: 'Chuyển sang đóng gói',
   };
 
-  it('renders Vietnamese label for each P03 status', () => {
+  it('renders Vietnamese label for each status', () => {
     statuses.forEach((status) => {
       const { unmount } = render(<OutboundStatusBadge status={status} />);
       expect(screen.getByText(expectedLabels[status])).toBeInTheDocument();
@@ -47,22 +47,22 @@ describe('OutboundStatusBadge', () => {
     expect(screen.getByText('UNKNOWN_STATUS')).toBeInTheDocument();
   });
 
-  it('applies correct CSS classes for P03_ORDER_RECEIVED', () => {
-    render(<OutboundStatusBadge status="P03_ORDER_RECEIVED" />);
+  it('applies correct CSS classes for ORDER_RECEIVED', () => {
+    render(<OutboundStatusBadge status="ORDER_RECEIVED" />);
     const badge = screen.getByText('Nhận đơn từ Shopee');
     expect(badge.className).toContain('bg-gray-100');
     expect(badge.className).toContain('text-gray-700');
   });
 
-  it('applies correct CSS classes for P03_MOVED_TO_PACKING', () => {
-    render(<OutboundStatusBadge status="P03_MOVED_TO_PACKING" />);
+  it('applies correct CSS classes for MOVED_TO_PACKING', () => {
+    render(<OutboundStatusBadge status="MOVED_TO_PACKING" />);
     const badge = screen.getByText('Chuyển sang đóng gói');
     expect(badge.className).toContain('bg-emerald-200');
     expect(badge.className).toContain('text-emerald-900');
   });
 
-  it('applies correct CSS classes for P03_INVENTORY_INSUFFICIENT', () => {
-    render(<OutboundStatusBadge status="P03_INVENTORY_INSUFFICIENT" />);
+  it('applies correct CSS classes for INVENTORY_INSUFFICIENT', () => {
+    render(<OutboundStatusBadge status="INVENTORY_INSUFFICIENT" />);
     const badge = screen.getByText('Không đủ hàng');
     expect(badge.className).toContain('bg-red-100');
     expect(badge.className).toContain('text-red-700');

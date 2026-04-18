@@ -1,0 +1,17 @@
+{
+  "name": "spx-express",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "lint": "npm --prefix be run lint && npm --prefix fe run lint",
+    "typecheck": "npm --prefix be run typecheck && npm --prefix fe run typecheck",
+    "test": "npm --prefix be run test:run && npm --prefix fe run test",
+    "build": "npm --prefix be run build && npm --prefix fe run build",
+    "e2e": "playwright test",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build && npm run e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.53.1",
+    "typescript": "^5.3.3"
+  }
+}

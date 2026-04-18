@@ -45,7 +45,7 @@ vi.mock('../../events/emitter.js', () => ({
   eventEmitter: mockEventEmitter,
 }));
 
-vi.mock('../../services/outbound-service.js', () => ({
+vi.mock('../../modules/outbound/service.js', () => ({
   outboundService: mockOutboundService,
 }));
 

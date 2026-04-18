@@ -6,7 +6,7 @@ import {
   getValidTransitions,
   isTerminalStatus,
   validateTransition,
-} from '../inbound-state-machine';
+} from '../../modules/inbound/domain/aggregates/inbound-policy.js';
 
 const ALL_STATUSES = [
   InboundStatus.INBOUND_CREATED,
@@ -49,8 +49,8 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
     InboundStatus.STAFF_RECEIVED,
   ],
   [InboundStatus.STAFF_RECEIVED]: [
-    InboundStatus.INBOUND_COMPLETED,
     InboundStatus.NEW_PRODUCT_CREATED,
+    InboundStatus.INVENTORY_UPDATED,
   ],
   [InboundStatus.NEW_PRODUCT_CREATED]: [
     InboundStatus.INVENTORY_UPDATED,
@@ -126,10 +126,10 @@ describe('inbound-state-machine', () => {
           to: InboundStatus.STAFF_RECEIVED,
           role: 'STAFF',
         },
-        // STAFF_RECEIVED → INBOUND_COMPLETED (STAFF, ADMIN)
+        // STAFF_RECEIVED → INVENTORY_UPDATED (STAFF, ADMIN)
         {
           from: InboundStatus.STAFF_RECEIVED,
-          to: InboundStatus.INBOUND_COMPLETED,
+          to: InboundStatus.INVENTORY_UPDATED,
           role: 'STAFF',
         },
         // STAFF_RECEIVED → NEW_PRODUCT_CREATED (STAFF, ADMIN)
@@ -252,10 +252,10 @@ describe('inbound-state-machine', () => {
           allowed: ['STAFF', 'ADMIN'],
           denied: ['QUALITY', 'ACCOUNTING', 'WAREHOUSE_DIRECTOR'],
         },
-        // STAFF_RECEIVED → INBOUND_COMPLETED: STAFF, ADMIN only
+        // STAFF_RECEIVED → INVENTORY_UPDATED: STAFF, ADMIN only
         {
           from: InboundStatus.STAFF_RECEIVED,
-          to: InboundStatus.INBOUND_COMPLETED,
+          to: InboundStatus.INVENTORY_UPDATED,
           allowed: ['STAFF', 'ADMIN'],
           denied: ['QUALITY', 'ACCOUNTING', 'WAREHOUSE_DIRECTOR'],
         },
@@ -347,8 +347,8 @@ describe('inbound-state-machine', () => {
       ]);
 
       expect(getValidTransitions(InboundStatus.STAFF_RECEIVED)).toEqual([
-        InboundStatus.INBOUND_COMPLETED,
         InboundStatus.NEW_PRODUCT_CREATED,
+        InboundStatus.INVENTORY_UPDATED,
       ]);
 
       expect(getValidTransitions(InboundStatus.INBOUND_COMPLETED)).toEqual([]);

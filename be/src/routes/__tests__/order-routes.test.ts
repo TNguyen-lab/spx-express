@@ -7,8 +7,7 @@
  *   POST   /orders/orders           → create
  *   POST   /orders/orders/:id/send-to-accounting
  *   POST   /orders/orders/:id/confirm-accounting
- *   POST   /orders/orders/:id/send-to-director
- *   POST   /orders/orders/:id/approve
+  *   POST   /orders/orders/:id/approve
  *   POST   /orders/orders/:id/reject
  *   POST   /orders/orders/:id/send-to-supplier
  *   POST   /orders/orders/:id/supplier-response
@@ -22,7 +21,7 @@
  * Bug: routes like /:id resolve to /orders/:id but frontend calls /orders/orders/:id
  */
 import { describe, it, expect } from 'vitest';
-import orderRoutes from '../order.routes.js';
+import orderRoutes from '../../modules/purchase-order/interface/http/routes.js';
 
 /**
  * Extract route paths from an Express Router instance.
@@ -60,7 +59,6 @@ describe('P01: Order Routes - Path Consistency', () => {
     { method: 'POST', path: '/orders', description: 'create order' },
     { method: 'POST', path: '/orders/:id/send-to-accounting', description: 'send to accounting' },
     { method: 'POST', path: '/orders/:id/confirm-accounting', description: 'confirm accounting' },
-    { method: 'POST', path: '/orders/:id/send-to-director', description: 'send to director' },
     { method: 'POST', path: '/orders/:id/approve', description: 'approve order' },
     { method: 'POST', path: '/orders/:id/reject', description: 'reject order' },
     { method: 'POST', path: '/orders/:id/send-to-supplier', description: 'send to supplier' },

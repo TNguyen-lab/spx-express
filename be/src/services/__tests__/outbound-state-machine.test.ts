@@ -6,7 +6,7 @@ import {
   getValidTransitions,
   isTerminalStatus,
   validateTransition,
-} from '../outbound-state-machine';
+} from '../../modules/outbound/domain/aggregates/outbound-policy.js';
 
 // ============================================================================
 // All P03 Outbound statuses
