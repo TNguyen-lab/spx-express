@@ -19,15 +19,26 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  purchaseOrders      PurchaseOrder[]
-  
-  inbounds            Inbound[]
-  outboundPickings    Outbound[]
-  packings            Packing[]
-  sortings            Sorting[]
-  shipments           Shipment[]
-  inventoryChecks     InventoryCheck[]
-  approvalsGiven    PurchaseOrderApproval[] @relation("approver")
+  purchaseOrders PurchaseOrder[]
+
+  inbounds                Inbound[]
+  outboundPickings        Outbound[]
+  packings                Packing[]
+  sortings                Sorting[]
+  shipments               Shipment[]
+  inventoryChecks         InventoryCheck[]        @relation("InventoryCheckChecker")
+  inventoryCheckApprovals InventoryCheck[]        @relation("InventoryCheckApprover")
+  approvalsGiven          PurchaseOrderApproval[] @relation("approver")
+  inventoryMovements      InventoryMovement[]
+  phieuNhapKho            PhieuNhapKho[]          @relation("PhieuNhapKhoCreator")
+  phieuXuatKho            PhieuXuatKho[]
+
+  // Transfer relations
+  requestedTransfers Transfer[]               @relation("TransferRequester")
+  approvedTransfers  Transfer[]               @relation("TransferApprover")
+  cancelledTransfers Transfer[]               @relation("TransferCanceller")
+  resolvedTransfers  TransferReconciliation[]
+  generatedReports   MonthlyReportSnapshot[]
 }
 
 enum UserRole {
@@ -53,21 +64,21 @@ model Supplier {
 }
 
 model PurchaseOrder {
-  id              String             @id @default(cuid())
-  orderNumber     String             @unique
-  supplierId      String
-  supplier        Supplier           @relation(fields: [supplierId], references: [id])
-  status          PurchaseOrderStatus @default(DRAFT)
-  expectedDate    DateTime?
-  notes           String?
-  createdById     String
-  createdBy       User               @relation(fields: [createdById], references: [id])
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  id           String              @id @default(cuid())
+  orderNumber  String              @unique
+  supplierId   String
+  supplier     Supplier            @relation(fields: [supplierId], references: [id])
+  status       PurchaseOrderStatus @default(DRAFT)
+  expectedDate DateTime?
+  notes        String?
+  createdById  String
+  createdBy    User                @relation(fields: [createdById], references: [id])
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
 
-  approvals       PurchaseOrderApproval[]
-  inbound         Inbound?
-  items           PurchaseOrderItem[]
+  approvals PurchaseOrderApproval[]
+  inbound   Inbound?
+  items     PurchaseOrderItem[]
 }
 
 enum PurchaseOrderStatus {
@@ -91,22 +102,22 @@ model PurchaseOrderItem {
   unitPrice       Float
   totalPrice      Float
   receivedQty     Int           @default(0)
-  createdAt       DateTime     @default(now())
+  createdAt       DateTime      @default(now())
 
-  product         Product       @relation(fields: [productId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
 }
 
 model PurchaseOrderApproval {
-  id              String           @id @default(cuid())
+  id              String         @id @default(cuid())
   purchaseOrderId String
-  purchaseOrder   PurchaseOrder    @relation(fields: [purchaseOrderId], references: [id])
+  purchaseOrder   PurchaseOrder  @relation(fields: [purchaseOrderId], references: [id])
   approverId      String
-  approver        User             @relation("approver", fields: [approverId], references: [id])
+  approver        User           @relation("approver", fields: [approverId], references: [id])
   role            ApprovalRole
   status          ApprovalStatus
   notes           String?
   approvedAt      DateTime?
-  createdAt       DateTime         @default(now())
+  createdAt       DateTime       @default(now())
 }
 
 enum ApprovalRole {
@@ -121,21 +132,22 @@ enum ApprovalStatus {
 }
 
 model Inbound {
-  id                String        @id @default(cuid())
-  inboundNumber     String        @unique
-  purchaseOrderId   String?       @unique
-  purchaseOrder     PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
-  staffId           String
-  staff             User          @relation(fields: [staffId], references: [id])
-  status            InboundStatus @default(INBOUND_CREATED)
-  receivedDate      DateTime?
-  qcPassedDate      DateTime?
-  completedDate     DateTime?
-  notes             String?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  id              String         @id @default(cuid())
+  inboundNumber   String         @unique
+  purchaseOrderId String?        @unique
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+  staffId         String
+  staff           User           @relation(fields: [staffId], references: [id])
+  status          InboundStatus  @default(INBOUND_CREATED)
+  receivedDate    DateTime?
+  qcPassedDate    DateTime?
+  completedDate   DateTime?
+  notes           String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 
-  items             InboundItem[]
+  items        InboundItem[]
+  PhieuNhapKho PhieuNhapKho?
 }
 
 enum InboundStatus {
@@ -154,35 +166,60 @@ enum InboundStatus {
 }
 
 model InboundItem {
-  id          String   @id @default(cuid())
-  inboundId    String
-  inbound     Inbound  @relation(fields: [inboundId], references: [id])
+  id          String             @id @default(cuid())
+  inboundId   String
+  inbound     Inbound            @relation(fields: [inboundId], references: [id])
   productId   String
-  product     Product  @relation(fields: [productId], references: [id])
+  product     Product            @relation(fields: [productId], references: [id])
   quantity    Int
-  receivedQty Int     @default(0)
-  damageQty   Int      @default(0)
-  barcode     String?  @unique
+  receivedQty Int                @default(0)
+  damageQty   Int                @default(0)
+  barcode     String?            @unique
   locationId  String?
   location    WarehouseLocation? @relation(fields: [locationId], references: [id])
   notes       String?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime           @default(now())
 }
 
 model Outbound {
-  id              String          @id @default(cuid())
-  outboundNumber  String          @unique
-  orderRef        String?         @unique
-  status          OutboundStatus  @default(ORDER_RECEIVED)
-  pickerId        String
-  picker          User            @relation(fields: [pickerId], references: [id])
-  pickedDate      DateTime?
-  notes           String?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  id             String         @id @default(cuid())
+  outboundNumber String         @unique
+  orderRef       String?        @unique
+  status         OutboundStatus @default(ORDER_RECEIVED)
+  pickerId       String
+  picker         User           @relation(fields: [pickerId], references: [id])
+  pickedDate     DateTime?
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
-  items           OutboundItem[]
-  packing         Packing?
+  items        OutboundItem[]
+  packing      Packing?
+  phieuXuatKho PhieuXuatKho?
+}
+
+model PhieuNhapKho {
+  id             String        @id @default(cuid())
+  phieuNumber    String        @unique
+  inboundId      String        @unique
+  inbound        Inbound       @relation(fields: [inboundId], references: [id])
+  createdById    String?
+  createdBy      User?         @relation("PhieuNhapKhoCreator", fields: [createdById], references: [id])
+  notes          String?
+  createdAt      DateTime      @default(now())
+
+  @@map("phieu_nhap_kho")
+}
+
+model PhieuXuatKho {
+  id          String   @id @default(cuid())
+  phieuNumber String   @unique
+  outboundId  String   @unique
+  outbound    Outbound @relation(fields: [outboundId], references: [id])
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id])
+  notes       String?
+  createdAt   DateTime @default(now())
 }
 
 enum OutboundStatus {
@@ -201,35 +238,40 @@ enum OutboundStatus {
 }
 
 model OutboundItem {
-  id          String   @id @default(cuid())
-  outboundId  String
-  outbound    Outbound @relation(fields: [outboundId], references: [id])
-  productId   String
-  product     Product  @relation(fields: [productId], references: [id])
-  quantity    Int
-  pickedQty   Int      @default(0)
-  locationId  String?
-  location    WarehouseLocation? @relation(fields: [locationId], references: [id])
-  createdAt   DateTime @default(now())
+  id         String             @id @default(cuid())
+  outboundId String
+  outbound   Outbound           @relation(fields: [outboundId], references: [id])
+  productId  String
+  product    Product            @relation(fields: [productId], references: [id])
+  quantity   Int
+  pickedQty  Int                @default(0)
+  locationId String?
+  location   WarehouseLocation? @relation(fields: [locationId], references: [id])
+  createdAt  DateTime           @default(now())
 }
 
 model Packing {
-  id            String       @id @default(cuid())
-  packingNumber String       @unique
-  outboundId    String       @unique
-  outbound      Outbound     @relation(fields: [outboundId], references: [id])
+  id            String        @id @default(cuid())
+  packingNumber String        @unique
+  outboundId    String        @unique
+  outbound      Outbound      @relation(fields: [outboundId], references: [id])
   packerId      String
-  packer        User         @relation(fields: [packerId], references: [id])
+  packer        User          @relation(fields: [packerId], references: [id])
   status        PackingStatus @default(PENDING)
   packedDate    DateTime?
   sealedDate    DateTime?
   weight        Float?
   dimension     String?
   notes         String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  sorting       Sorting?
+  sorting Sorting?
+
+  // Grouping fields for carton/pallet management
+  cartonId    String?
+  palletId    String?
+  itemsPacked Int     @default(0)
 }
 
 enum PackingStatus {
@@ -242,20 +284,20 @@ enum PackingStatus {
 }
 
 model Sorting {
-  id            String       @id @default(cuid())
-  sortingNumber String       @unique
-  packingId     String       @unique
-  packing       Packing      @relation(fields: [packingId], references: [id])
+  id            String        @id @default(cuid())
+  sortingNumber String        @unique
+  packingId     String        @unique
+  packing       Packing       @relation(fields: [packingId], references: [id])
   sorterId      String
-  sorter        User         @relation(fields: [sorterId], references: [id])
+  sorter        User          @relation(fields: [sorterId], references: [id])
   status        SortingStatus @default(PENDING)
   sortedDate    DateTime?
   completedDate DateTime?
   notes         String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  shipment      Shipment?
+  shipment Shipment?
 }
 
 enum SortingStatus {
@@ -265,23 +307,92 @@ enum SortingStatus {
   COMPLETED
 }
 
-model Shipment {
-  id              String         @id @default(cuid())
-  shipmentNumber  String         @unique
-  sortingId       String         @unique
-  sorting         Sorting        @relation(fields: [sortingId], references: [id])
-  shipperId       String
-  shipper         User           @relation(fields: [shipperId], references: [id])
-  carrier         String
-  trackingNumber  String?        @unique
-  status          ShipmentStatus @default(CREATED)
-  shippedDate     DateTime?
-  deliveredDate   DateTime?
-  deliveryNotes   String?
-  notes           String?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+// Internal transfer between warehouse locations
+model Transfer {
+  id             String            @id @default(cuid())
+  transferNumber String            @unique
+  fromLocationId String
+  fromLocation   WarehouseLocation @relation("TransferFromLocation", fields: [fromLocationId], references: [id])
+  toLocationId   String
+  toLocation     WarehouseLocation @relation("TransferToLocation", fields: [toLocationId], references: [id])
+  status         TransferStatus    @default(PENDING)
+  requestedById  String
+  requestedBy    User              @relation("TransferRequester", fields: [requestedById], references: [id])
+  approvedById   String?
+  approvedBy     User?             @relation("TransferApprover", fields: [approvedById], references: [id])
+  dispatchedAt   DateTime?
+  receivedAt     DateTime?
+  cancelledAt    DateTime?
+  cancelledById  String?
+  cancelledBy    User?             @relation("TransferCanceller", fields: [cancelledById], references: [id])
+  notes          String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 
+  items           TransferItem[]
+  reconciliations TransferReconciliation[]
+}
+
+enum TransferStatus {
+  PENDING // Transfer requested, awaiting approval
+  APPROVED // Transfer approved, ready for dispatch
+  DISPATCHED // Items dispatched from source (paired movement recorded)
+  IN_TRANSIT // Items in transit
+  RECEIVED // Items received at destination (paired movement recorded)
+  COMPLETED // Transfer fully completed
+  CANCELLED // Transfer cancelled
+  EXCEPTION // Transfer has discrepancy requiring reconciliation
+}
+
+model TransferItem {
+  id          String   @id @default(cuid())
+  transferId  String
+  transfer    Transfer @relation(fields: [transferId], references: [id])
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  quantity    Int
+  receivedQty Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  // Reconciliation for discrepancies
+  discrepancyNote String?
+  resolved        Boolean @default(false)
+}
+
+// Reconciliation task created when transfer has discrepancy
+model TransferReconciliation {
+  id             String    @id @default(cuid())
+  transferId     String
+  transfer       Transfer  @relation(fields: [transferId], references: [id])
+  productId      String
+  product        Product   @relation(fields: [productId], references: [id])
+  expectedQty    Int
+  actualQty      Int
+  discrepancyQty Int
+  resolvedById   String?
+  resolvedBy     User?     @relation(fields: [resolvedById], references: [id])
+  resolvedAt     DateTime?
+  resolution     String? // RESOLVED_SOURCE, RESOLVED_DESTINATION, WRITTEN_OFF
+  notes          String?
+  createdAt      DateTime  @default(now())
+}
+
+model Shipment {
+  id             String         @id @default(cuid())
+  shipmentNumber String         @unique
+  sortingId      String         @unique
+  sorting        Sorting        @relation(fields: [sortingId], references: [id])
+  shipperId      String
+  shipper        User           @relation(fields: [shipperId], references: [id])
+  carrier        String
+  trackingNumber String?        @unique
+  status         ShipmentStatus @default(CREATED)
+  shippedDate    DateTime?
+  deliveredDate  DateTime?
+  deliveryNotes  String?
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 }
 
 enum ShipmentStatus {
@@ -295,19 +406,23 @@ enum ShipmentStatus {
 }
 
 model InventoryCheck {
-  id              String              @id @default(cuid())
-  checkNumber     String              @unique
-  checkerId       String
-  checker         User                @relation(fields: [checkerId], references: [id])
-  type            InventoryCheckType  @default(ROUTINE)
-  startDate       DateTime?
-  endDate         DateTime?
-  status          InventoryCheckStatus @default(PENDING)
-  notes           String?
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  id          String               @id @default(cuid())
+  checkNumber String               @unique
+  checkerId   String
+  checker     User                 @relation("InventoryCheckChecker", fields: [checkerId], references: [id])
+  type        InventoryCheckType   @default(ROUTINE)
+  startDate   DateTime?
+  endDate     DateTime?
+  status      InventoryCheckStatus @default(PENDING)
+  notes       String?
+  scope       String?
+  approverId  String?
+  approver    User?                @relation("InventoryCheckApprover", fields: [approverId], references: [id])
+  approvedAt  DateTime?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
 
-  items           InventoryCheckItem[]
+  items InventoryCheckItem[]
 }
 
 enum InventoryCheckType {
@@ -323,16 +438,16 @@ enum InventoryCheckStatus {
 }
 
 model InventoryCheckItem {
-  id                String         @id @default(cuid())
-  inventoryCheckId  String
-  inventoryCheck    InventoryCheck @relation(fields: [inventoryCheckId], references: [id])
-  productId         String
-  product           Product        @relation(fields: [productId], references: [id])
-  systemQty         Int
-  actualQty         Int
-  discrepancy       Int
-  notes             String?
-  createdAt         DateTime       @default(now())
+  id               String         @id @default(cuid())
+  inventoryCheckId String
+  inventoryCheck   InventoryCheck @relation(fields: [inventoryCheckId], references: [id])
+  productId        String
+  product          Product        @relation(fields: [productId], references: [id])
+  systemQty        Int
+  actualQty        Int
+  discrepancy      Int
+  notes            String?
+  createdAt        DateTime       @default(now())
 }
 
 model Product {
@@ -351,37 +466,108 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  purchaseOrderItems PurchaseOrderItem[]
-  inboundItems       InboundItem[]
-  outboundItems      OutboundItem[]
-  inventory          Inventory?
-  inventoryCheckItems InventoryCheckItem[]
+  purchaseOrderItems      PurchaseOrderItem[]
+  inboundItems            InboundItem[]
+  outboundItems           OutboundItem[]
+  inventory               Inventory?
+  inventoryCheckItems     InventoryCheckItem[]
+  inventoryMovements      InventoryMovement[]
+  transferItems           TransferItem[]
+  transferReconciliations TransferReconciliation[]
+  reportSnapshots         MonthlyReportSnapshot[]
 }
 
 model WarehouseLocation {
-  id       String @id @default(cuid())
-  zone     String
-  row      Int
-  shelf    Int
-  position Int?
-  capacity Int    @default(100)
-  isActive Boolean @default(true)
+  id        String   @id @default(cuid())
+  zone      String
+  row       Int
+  shelf     Int
+  position  Int?
+  capacity  Int      @default(100)
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 
   inboundItems  InboundItem[]
   outboundItems OutboundItem[]
+  fromMovements InventoryMovement[] @relation("FromLocation")
+  toMovements   InventoryMovement[] @relation("ToLocation")
+
+  // Transfer relations
+  transfersFrom Transfer[] @relation("TransferFromLocation")
+  transfersTo   Transfer[] @relation("TransferToLocation")
+
+  // Report relations
+  reportSnapshots MonthlyReportSnapshot[]
+}
+
+enum MovementType {
+  INBOUND
+  OUTBOUND
+  RESERVATION
+  RELEASE
+  ADJUSTMENT
+  TRANSFER_IN
+  TRANSFER_OUT
+  DAMAGED
+  RETURNED
+}
+
+model InventoryMovement {
+  id             String             @id @default(cuid())
+  productId      String
+  product        Product            @relation(fields: [productId], references: [id])
+  movementType   MovementType
+  quantity       Int
+  referenceType  String
+  referenceId    String
+  fromLocationId String?
+  fromLocation   WarehouseLocation? @relation("FromLocation", fields: [fromLocationId], references: [id])
+  toLocationId   String?
+  toLocation     WarehouseLocation? @relation("ToLocation", fields: [toLocationId], references: [id])
+  notes          String?
+  createdById    String?
+  createdBy      User?              @relation(fields: [createdById], references: [id])
+  createdAt      DateTime           @default(now())
+}
+
+model MonthlyReportSnapshot {
+  id                  String             @id @default(cuid())
+  reportKey           String             @unique
+  reportType          String             @default("MONTHLY_INVENTORY")
+  periodKey           String
+  periodStart         DateTime
+  periodEnd           DateTime
+  closedAt            DateTime
+  warehouseLocationId String?
+  warehouseLocation   WarehouseLocation? @relation(fields: [warehouseLocationId], references: [id], onDelete: SetNull)
+  productId           String?
+  product             Product?           @relation(fields: [productId], references: [id], onDelete: SetNull)
+  category            String?
+  closeRule           String
+  sourceHash          String
+  sourceMovementCount Int
+  payload             Json
+  generatedById       String?
+  generatedBy         User?              @relation(fields: [generatedById], references: [id], onDelete: SetNull)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@index([periodKey])
+  @@index([sourceHash])
+  @@index([warehouseLocationId])
+  @@index([productId])
 }
 
 model Inventory {
-  id         String   @id @default(cuid())
-  productId  String   @unique
-  product    Product  @relation(fields: [productId], references: [id])
-  quantity   Int      @default(0)
-  available  Int      @default(0)
-  reserved   Int      @default(0)
-  costPrice  Float    @default(0)
-  updatedAt  DateTime @updatedAt
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  productId String   @unique
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int      @default(0)
+  available Int      @default(0)
+  reserved  Int      @default(0)
+  costPrice Float    @default(0)
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
 }
 
 model EventLog {
@@ -395,4 +581,22 @@ model EventLog {
   status     String   @default("SUCCESS")
   errorMsg   String?
   createdAt  DateTime @default(now())
+}
+
+model Outbox {
+  id         String   @id @default(cuid())
+  eventType  String
+  entityType String
+  entityId   String
+  payload    Json
+  status     String   @default("PENDING")
+  attempts   Int      @default(0)
+  lastError  String?
+  lockedAt   DateTime?
+  processedAt DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([entityType, entityId])
 }
