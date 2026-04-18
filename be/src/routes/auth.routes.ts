@@ -21,7 +21,7 @@ const registerSchema = z.object({
 });
 
 // POST /auth/login
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/auth/login', async (req: Request, res: Response) => {
   try {
     const data = loginSchema.parse(req.body);
     const user = await prisma.user.findUnique({
@@ -59,7 +59,7 @@ router.post('/login', async (req: Request, res: Response) => {
 });
 
 // POST /auth/register
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/auth/register', async (req: Request, res: Response) => {
   try {
     const data = registerSchema.parse(req.body);
     
@@ -103,12 +103,12 @@ router.post('/register', async (req: Request, res: Response) => {
 });
 
 // GET /auth/me
-router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
+router.get('/auth/me', authenticate, async (req: AuthRequest, res: Response) => {
   res.json({ user: req.user });
 });
 
 // GET /auth/users - List all users (admin only)
-router.get('/users', authenticate, async (req: AuthRequest, res: Response) => {
+router.get('/auth/users', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const users = await prisma.user.findMany({
       select: {
