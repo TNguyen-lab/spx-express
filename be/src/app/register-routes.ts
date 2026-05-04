@@ -9,6 +9,7 @@ import { productRoutes } from '../modules/product/index.js';
 import { supplierRoutes } from '../modules/supplier/index.js';
 import { locationRoutes } from '../modules/location/index.js';
 import { reportingRoutes } from '../modules/reporting/index.js';
+import { analyticsRoutes } from '../modules/analytics/index.js';
 
 // Module routes (to be migrated)
 import { purchaseOrderRoutes } from '../modules/purchase-order/index.js';
@@ -36,6 +37,7 @@ export function registerRoutes(app: Application): void {
   app.use(inventoryCheckRoutes);
   app.use(transferRoutes);
   app.use(reportingRoutes);
+  app.use(analyticsRoutes);
   app.use(packingRoutes);
   app.use(sortingRoutes);
   app.use(shippingRoutes);
